@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
                     Column {
                         StatefulTemperatureInput()
                         ConverterApp()
+                        TwoWayConverterApp()
                     }
                 }
             }
@@ -126,3 +127,61 @@ private fun ConverterApp(
         )
     }
 }
+
+enum class Scale(val scaleName: String) {
+    CELCIUS("celcius"),
+    FAHRENHEIT("Fahrenheit")
+}
+
+@Composable
+fun GeneralTemperatureInput(
+    scale: Scale,
+    input: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier) {
+        OutlinedTextField(
+            value = input,
+            label = { Text(stringResource(R.string.enter_temperature, scale.scaleName)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            onValueChange = onValueChange
+        )
+    }
+}
+
+@Composable
+private fun TwoWayConverterApp(
+    modifier: Modifier = Modifier,
+) {
+    var celsius by remember { mutableStateOf("") }
+    var fahrenheit by remember { mutableStateOf("") }
+    Column(modifier.padding(16.dp)) {
+        Text(
+            text = stringResource(R.string.two_way_converter),
+            style = MaterialTheme.typography.h5
+        )
+        GeneralTemperatureInput(
+            scale = Scale.CELCIUS,
+            input = celsius,
+            onValueChange = { newInput ->
+                celsius = newInput
+                fahrenheit = convertToFahrenheit(newInput)
+            }
+        )
+        GeneralTemperatureInput(
+            scale = Scale.FAHRENHEIT,
+            input = fahrenheit,
+            onValueChange = {newInput ->
+                fahrenheit = newInput
+                celsius = convertToCelsius(newInput)
+
+            }
+        )
+    }
+}
+
+private fun convertToCelsius(fahrenheit: String) =
+    fahrenheit.toDoubleOrNull()?.let {
+        (it - 32) * 5 / 9
+    }.toString()
